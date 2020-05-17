@@ -1,2 +1,2 @@
 # WellCheck-Mobile-App
-ReactJS mobile application for WellCheck.fr
+React Native mobile application for WellCheck.fr
