@@ -18,6 +18,7 @@
     "react": "~16.9.0",
     "react-dom": "~16.9.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-36.0.0.tar.gz",
+    "react-native-base64": "^0.1.0",
     "react-native-camera": "^3.23.1",
     "react-native-chart-kit": "^5.3.0",
     "react-native-gesture-handler": "^1.5.6",

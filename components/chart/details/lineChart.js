@@ -8,6 +8,7 @@ export default class CustomLineChart extends Component{
     static propTypes = {
         data : PropTypes.Array,
         bezier : PropTypes.bool,
+        type : PropTypes.string,
     }
 
     render() {
@@ -20,7 +21,7 @@ export default class CustomLineChart extends Component{
 
         const screenWidth = Dimensions.get("window").width;
         
-        if(this.props.bezier == true){
+        if(this.props.type == "pH"){
             return (
                 <View style={styles.container}>
                     <View style={styles.viewText}>
@@ -38,11 +39,11 @@ export default class CustomLineChart extends Component{
                 </View>
             );
         }
-        else{
+        else if(this.props.type == "redox"){
             return (
                 <View style={styles.container}>
                     <View style={styles.viewText}>
-                        <Text>Score</Text>
+                        <Text>Redox</Text>
                     </View>
                     <LineChart
                         style={{borderRadius: 10}}
@@ -55,7 +56,23 @@ export default class CustomLineChart extends Component{
                 </View>
             );
         }
-        
+        else if (this.props.type == "temp"){
+            return (
+                <View style={styles.container}>
+                    <View style={styles.viewText}>
+                        <Text>Temperature</Text>
+                    </View>
+                    <LineChart
+                        style={{borderRadius: 10}}
+                        data={this.props.data}
+                        width={screenWidth - 50}
+                        height={250}
+                        chartConfig={chartConfig}
+                        verticalLabelRotation={15}
+                    />
+                </View>
+            );
+        }
     }
 }
 

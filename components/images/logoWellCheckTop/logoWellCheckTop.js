@@ -15,7 +15,7 @@ export default class LogoWellCheckTop extends Component {
 const styles = StyleSheet.create({
     logoImage:{
         marginTop:10,
-        height:250,
+        height:150,
         width:250,
     },
 })

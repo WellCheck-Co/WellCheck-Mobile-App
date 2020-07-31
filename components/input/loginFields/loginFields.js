@@ -49,7 +49,7 @@ export default class LoginFields extends Component {
             return (
                 <KeyboardAvoidingView
                     keyboardVerticalOffset = {Header.HEIGHT + 20}
-                    style = {{ flex: 1, marginTop:'20%' }}
+                    style = {{ flex: 1, marginTop:'50%' }}
                     behavior = "padding" >
 
                     <View style={{ justifyContent:'center', alignItems:'center' }}>
@@ -113,7 +113,7 @@ export default class LoginFields extends Component {
             return (
                 <KeyboardAvoidingView
                     keyboardVerticalOffset = {Header.HEIGHT + 20}
-                    style = {{ flex: 1, marginTop:'15%' }}
+                    style = {{ flex: 1, marginTop:'40%' }}
                     behavior = "padding" >
                     <View style={{ justifyContent:'center', alignItems:'center' }}>
                         <View style={styles.viewInput}>

@@ -5,16 +5,19 @@ import Modal from 'react-native-modal';
 import CustomContributionGraph from '../../components/chart/details/heatMap'
 import CustomLineChart from '../../components/chart/details/lineChart'
 import CustomBarChart from '../../components/chart/details/stackedBarChart'
+import { Bar } from 'react-native-progress';
 // import {BarChart} from 'react-native-chart-kit'
 
 export default class Details extends React.Component {
-
   constructor(props) {
     super(props);
     this.state = {
+      back_to_map:this.props.navigation.state.params.back_to_map ? this.props.navigation.state.params.back_to_map : "",
       floater_id:this.props.navigation.state.params.floater_id,
       floater_data:{},
       floater_name:this.props.navigation.state.params.floater_name,
+      bar_color:null,
+      floater_score:null,
       isMonthModalVisible:false,
       isDayModalVisible:false,
       isYearModalVisible:false,
@@ -28,19 +31,29 @@ export default class Details extends React.Component {
           data:[]
         }]
       },
+      data_temp: {
+        labels:[],
+        datasets:[{
+          data:[]
+        }]
+      },
       data_turbidity:{
         labels:[],
         datasets:[{
           data:[]
         }]
       },
-      data_score:{
+      data_redox:{
         labels:[],
         datasets:[{
           data:[]
         }]
       },
     };
+  }
+
+  getColorFromNote(noteOn100) {
+    return "hsl("+ noteOn100 +", 100%, 40%)";
   }
 
   _request_get_all_floater_infos = async () => {
@@ -61,7 +74,7 @@ export default class Details extends React.Component {
             this.setState({error:true})
         }
         if (responseJson["succes"] == true) {
-            this.setState({floater_data:responseJson['data']})
+            this.setState({floater_score:responseJson['data']['data'][['data'].length-1]['data']['data']['note'], floater_data:responseJson['data'], bar_color:this.getColorFromNote(responseJson['data']['data'][['data'].length-1]['data']['data']['note']*10)})
             this.fill_data()
         }
     }
@@ -72,10 +85,15 @@ export default class Details extends React.Component {
     }        
   }
 
+  _map(){
+    this.props.navigation.navigate('WCMap')
+  }
+
   fill_data(){
     // this.fill_heatmap()
     this.fill_ph()
-    this.fill_score()
+    this.fill_temp()
+    this.fill_redox()
     this.fill_turbidity()
     this.forceUpdate()
   }
@@ -88,6 +106,14 @@ export default class Details extends React.Component {
       })
   }
 
+  fill_temp(){
+    this.state.floater_data['data'].map(report =>
+      {
+        this.state.data_temp.labels.push(new Date(report['date'] / 1000).toLocaleDateString("en-US"))
+        this.state.data_temp.datasets[0].data.push(report["data"]['data']['temp'])
+      })
+  }
+
   fill_turbidity(){
     this.state.floater_data['data'].map(report =>
       {
@@ -95,17 +121,17 @@ export default class Details extends React.Component {
         this.state.data_turbidity.datasets[0].data.push(report["data"]['data']['turbidity'])
       })
   }
-  fill_score(){
+  fill_redox(){
     this.state.floater_data['data'].map(report =>
       {
-        this.state.data_score.labels.push(new Date(report['date'] / 1000).toLocaleDateString("en-US"))
-        this.state.data_score.datasets[0].data.push(report["data"]['data']['note'])
+        this.state.data_redox.labels.push(new Date(report['date'] / 1000).toLocaleDateString("en-US"))
+        this.state.data_redox.datasets[0].data.push(report["data"]['data']['redox'])
       })
   }
 
   componentDidMount(){
+    console.disableYellowBox = true;
     this._request_get_all_floater_infos()
-    console.log(this.state.floater_name)
   }
 
   _openModalMonth = () => {
@@ -165,19 +191,32 @@ export default class Details extends React.Component {
     this._closeModalYear()
   }
 
-  display_pie_chart(){
-    return (
-      <CustomLineChart
-          data={this.state.data_ph}
-          bezier={true}
-      />);
+  display_pie_chart(type){
+    if(type == "ph"){
+      return (
+        <CustomLineChart
+            data={this.state.data_ph}
+            bezier={true}
+            type={"pH"}
+        />);
+    }
+    if(type == "temp"){
+      return (
+        <CustomLineChart
+            data={this.state.data_temp}
+            bezier={true}
+            type={"temp"}
+        />);
+    }
+    
   }
 
   display_line_chart_bezier(){
     return (
       <CustomLineChart
-          data={this.state.data_score}
+          data={this.state.data_redox}
           bezier={false}
+          type={"redox"}
       />);
   }
 
@@ -210,14 +249,15 @@ export default class Details extends React.Component {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.viewDate}>
-          <TouchableHighlight onPress={this._openModalMonth}>
-            <View style={styles.viewValueDate}>
-              <Text style={styles.valueDate}>{this.state.month}</Text>
-            </View>
-          </TouchableHighlight>
+          <Text>Choose date :</Text>
           <TouchableHighlight onPress={this._openModalDay}>
             <View style={styles.viewValueDate}>
               <Text style={styles.valueDate}>{this.state.day}</Text>
+            </View>
+          </TouchableHighlight>
+          <TouchableHighlight onPress={this._openModalMonth}>
+            <View style={styles.viewValueDate}>
+              <Text style={styles.valueDate}>{this.state.month}</Text>
             </View>
           </TouchableHighlight>
           <TouchableHighlight onPress={this._openModalYear}>
@@ -227,6 +267,18 @@ export default class Details extends React.Component {
           </TouchableHighlight>
         </View>
         <View style={{justifyContent:'center', alignItems:'center'}}>
+            {
+              this.state.data_redox.labels.length == 0 ?
+                <ActivityIndicator size="large" color="#0098EB" />
+              :
+              <View style={{marginTop:10}}>
+                <View style={{alignItems:'center', justifyContent:'center', flexDirection:'row',flexWrap:'wrap'}}>
+                  <Text style={{fontWeight: "bold"}}>Score: </Text>
+                  <Text>{this.state.floater_score} / 20</Text>
+                </View>
+                <Bar progress={this.state.floater_score} borderWidth={0} color={this.state.bar_color} style={{backgroundColor: "darkgray"}} />
+              </View>
+            }
           <Text style={{fontSize:40}}>{this.state.floater_name}</Text>
         </View>
         <ScrollView>
@@ -235,7 +287,7 @@ export default class Details extends React.Component {
                 data={heatmap_data}
             />
             {
-              this.state.data_score.labels.length == 0?
+              this.state.data_redox.labels.length == 0?
                 <ActivityIndicator size="large" color="#0098EB" />
             :
               this.display_line_chart_bezier()
@@ -244,14 +296,19 @@ export default class Details extends React.Component {
               this.state.data_ph.labels.length == 0?
                 <ActivityIndicator size="large" color="#0098EB" />
             :
-                this.display_pie_chart()
+                this.display_pie_chart("ph")
             }
-            
             {
               this.state.data_turbidity.labels.length == 0?
                 <ActivityIndicator size="large" color="#0098EB" />
             :
                 this.display_bar_chart()
+            }
+            {
+              this.state.data_temp.labels.length == 0?
+                <ActivityIndicator size="large" color="#0098EB" />
+            :
+                this.display_pie_chart("temp")
             }
             <View>
             <TouchableOpacity onPress={() => this._details()}>
@@ -262,7 +319,13 @@ export default class Details extends React.Component {
             </View>
           </View>
         </ScrollView>
-
+          {this.state.back_to_map != "" &&
+            <View>
+              <TouchableOpacity onPress={() => this._map()} style={{alignItems:'center', justifyContent:'center', backgroundColor:"white", height:40}}>
+                <Text>Back to map</Text>
+              </TouchableOpacity>
+            </View>
+          }
         <Modal isVisible={this.state.isMonthModalVisible} onBackdropPress={()=>this._closeModalMonth()} style={styles.modal}>
           <View style={styles.viewModal}>
             <ScrollView style={styles.viewScrollView}>
@@ -316,8 +379,8 @@ const styles = StyleSheet.create({
         backgroundColor:'#8c8c8c'
     },
     viewValueDate:{
-      height:100,
-      width:80,
+      height:80,
+      width:90,
       alignItems:'center',
       justifyContent:'center'
     },
@@ -328,7 +391,7 @@ const styles = StyleSheet.create({
     view_touchable: {
       height: 50,
       marginTop: 30,
-      backgroundColor: '#E2E4E6',
+      backgroundColor: '#f8faaf',
       marginBottom:30,
       justifyContent:'center',
       alignItems:'center',

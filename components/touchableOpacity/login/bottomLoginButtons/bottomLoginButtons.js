@@ -45,6 +45,7 @@ export default class BottomLoginButtons extends Component{
                 })
             });
             const responseJson = await response.json();
+            console.log(responseJson)
             if (responseJson["succes"] == false) {
                 this.setState({
                     error:'This account does not exists'
@@ -84,7 +85,7 @@ export default class BottomLoginButtons extends Component{
               console.log(responseJson)
             }
             if (responseJson["succes"] == true) {
-                this._login()
+                this.setState({error:'Mail sent'})
             }
         }
         catch (error) {

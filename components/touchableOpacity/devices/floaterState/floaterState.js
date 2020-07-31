@@ -33,7 +33,7 @@ export default class FloaterState extends Component{
                         <Image source={require("../../../../assets/images/points/point_bleu.png")} style={styles.img_point_bleu} />
                         <Text style={styles.device_name_text}>{this.props.name}</Text>
                     </View>
-                    <Text style={styles.location_text}>{this.props.location}   |   Add by : {this.props.owner}</Text>
+                    <Text style={styles.location_text}>{this.props.location}   |   Added by : {this.props.owner}</Text>
                 </View>
             </TouchableOpacity>
             );
@@ -46,7 +46,7 @@ export default class FloaterState extends Component{
                         <Image source={require("../../../../assets/images/points/point_rouge.png")} style={styles.img_point_rouge} />
                         <Text style={styles.device_name_text}>{this.props.name}</Text>
                     </View>
-                    <Text style={styles.location_text}>{this.props.location}   |   Add by : {this.props.owner}</Text>
+                    <Text style={styles.location_text}>{this.props.location}   |   Added by : {this.props.owner}</Text>
                 </View>
             </TouchableOpacity>
             );
@@ -58,7 +58,7 @@ export default class FloaterState extends Component{
                           <Image source={require("../../../../assets/images/points/point_vert.png")} style={styles.img_point_bleu} />
                           <Text style={styles.device_name_text}>{this.props.name}</Text>
                       </View>
-                      <Text style={styles.location_text}>{this.props.location}   |   Add by : {this.props.owner}</Text>
+                      <Text style={styles.location_text}>{this.props.location}   |   Added by : {this.props.owner}</Text>
                   </View>
               );
           }

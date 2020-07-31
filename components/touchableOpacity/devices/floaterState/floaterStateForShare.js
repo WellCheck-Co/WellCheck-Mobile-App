@@ -59,12 +59,12 @@ export default class FloaterStateForShare extends Component{
                 </TouchableOpacity>
             );
           }
-          else if (this.props.point_img == "green") {
+          else if (this.props.point_img == "grey") {
             return (
                 <TouchableOpacity onPress={() => this.changeStatePressStatus(this.props.device_id)}>
                     <View style={this.state.pressStatus ? styles.view_touchable_pressed : styles.view_touchable}>
                         <View style={styles.view_point_name}>
-                            <Image source={require("../../../../assets/images/points/point_vert.png")} style={styles.img_point_bleu} />
+                            <Image source={require("../../../../assets/images/points/point_gris.png")} style={styles.img_point_bleu} />
                             <Text style={styles.device_name_text}>{this.props.name}</Text>
                         </View>
                         <Text style={styles.location_text}>{this.props.location}</Text>

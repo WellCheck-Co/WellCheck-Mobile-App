@@ -5,7 +5,6 @@ import Modal from 'react-native-modal';
 import CustomPieChart from '../../components/chart/devices/pieChart'
 import FloaterState from '../../components/touchableOpacity/devices/floaterState/floaterState'
 import FloaterStateForShare from '../../components/touchableOpacity/devices/floaterState/floaterStateForShare'
-import { HitTestResultTypes } from 'expo/build/AR';
 
 export default class Devices extends React.Component {
 
@@ -144,7 +143,7 @@ export default class Devices extends React.Component {
               <FloaterState
                 point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] >= 10 ? "blue" : "red"}
                 name={floater["name"]}
-                location={"long: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lon']+"   lat: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lat']}
+                location={"long: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lng']+"   lat: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lat']}
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
@@ -152,7 +151,7 @@ export default class Devices extends React.Component {
         }else{
             return(
               <FloaterState
-                point_img={"green"}
+                point_img={"grey"}
                 name={floater["name"]}
                 location={"long: undefined   lat: undefined"}
                 owner="me"
@@ -182,7 +181,7 @@ export default class Devices extends React.Component {
         }else{
             return(
               <FloaterStateForShare
-                point_img={"green"}
+                point_img={"grey"}
                 name={floater["name"]}
                 location={"long: undefined   lat: undefined"}
                 selected={this.addFLoaterSelectedForShare.bind(this)}
@@ -236,7 +235,9 @@ export default class Devices extends React.Component {
                 'usrtoken':global.infos.user_token,
             },
             body: JSON.stringify({
-                "id_sig":this.field.sigfox_id
+                "id_sig":this.field.sigfox_id,
+                "lat":48.9534,
+                "lng":2.4488
             })
         });
         const responseJson = await response.json();
@@ -310,7 +311,7 @@ export default class Devices extends React.Component {
       {
         name: "Without data",
         population: this.state.without_data_devices,
-        color: "#aab938",
+        color: "#a8a8a8",
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
       }
@@ -335,11 +336,21 @@ export default class Devices extends React.Component {
       {
         name: "Without data",
         population: this.state.shared_without_data_devices,
-        color: "#aab938",
+        color: "#a8a8a8",
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
       }
     ];
+
+    // const pie_chart_empty_data = [
+    //   {
+    //     name: "Without data",
+    //     population: 0,
+    //     color: "#aab938",
+    //     legendFontColor: "#7F7F7F",
+    //     legendFontSize: 15
+    //   }
+    // ];
 
 
     return (
