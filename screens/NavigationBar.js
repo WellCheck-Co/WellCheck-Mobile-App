@@ -21,10 +21,10 @@ export default function MyTabs() {
                 tabBarIcon: ({ color }) => {
                     return <MaterialIcon name={"map"} size={25} color={color} />;
                 }}} />
-                <Tab.Screen name="Profile" component={Profile} options={{
+                {/* <Tab.Screen name="Profile" component={Profile} options={{
                 tabBarIcon: ({ color }) => {
                     return <MaterialIcon name={"person"} size={25} color={color} />;
-                }}} />
+                }}} /> */}
                 <Tab.Screen name="Settings" component={Settings} options={{
                 tabBarIcon: ({ color }) => {
                     return <MaterialIcon name={"settings"} size={25} color={color} />;

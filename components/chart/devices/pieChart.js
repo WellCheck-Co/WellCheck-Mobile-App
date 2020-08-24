@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 export default class CustomPieChart extends Component{
 
     static propTypes = {
-        data : PropTypes.Array,
+        data : PropTypes.array.isRequired,
     }
 
     render() {

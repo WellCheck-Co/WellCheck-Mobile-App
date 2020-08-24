@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, Button } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Text, Button, ActivityIndicator } from 'react-native';
 import PropTypes from 'prop-types';
 
 export default class BottomLoginButtons extends Component{
@@ -8,6 +8,7 @@ export default class BottomLoginButtons extends Component{
         super(props);
         this.state = {
             error:"",
+            loader: false,
         };
     }
 
@@ -33,6 +34,7 @@ export default class BottomLoginButtons extends Component{
 
     _request_signin = async () => {
         try {
+            this.setState({loader:true})
             const response = await fetch('https://api.wellcheck.fr/signin/', {
                 method: 'POST',
                 headers: {
@@ -60,11 +62,13 @@ export default class BottomLoginButtons extends Component{
             this.setState({
                 error:'Cann\'t connect to server'
             })
-        }        
+        }
+        this.setState({loader:false})      
     }
 
     _request_signup = async () => {
         try {
+            this.setState({loader:true})
             const response = await fetch('https://api.wellcheck.fr/signup/', {
                 method: 'POST',
                 headers: {
@@ -93,7 +97,8 @@ export default class BottomLoginButtons extends Component{
             this.setState({
                 error:'Cann\'t connect to server'
             })
-        }        
+        }
+        this.setState({loader:false})
     }
 
     render(){
@@ -113,10 +118,14 @@ export default class BottomLoginButtons extends Component{
                     </View>
                     <View style={styles.redirectButton}>
                         <View style={styles.button}>
-                            <Button
-                                type="Solid Button"
-                                title="Create my account"
-                                onPress={() => this._request_signup()}/>
+                            {this.state.loader ?
+                                    <ActivityIndicator size="large" color="#0098EB" />
+                                :
+                                <Button
+                                    type="Solid Button"
+                                    title="Create my account"
+                                    onPress={() => this._request_signup()}/>
+                                }
                         </View>
                     </View>
                     <View style={styles.redirectButton}>
@@ -143,11 +152,15 @@ export default class BottomLoginButtons extends Component{
                     </View>
                     <View style={styles.redirectButton}>
                         <View style={styles.button}>
-                            <Button
-                                type="Solid Button"
-                                title="Sign In"
-                                onPress={() => this._request_signin()}
-                            />
+                            {this.state.loader ?
+                                <ActivityIndicator size="large" color="#0098EB" />
+                            :
+                                <Button
+                                    type="Solid Button"
+                                    title="Sign In"
+                                    onPress={() => this._request_signin()}
+                                />
+                            }
                         </View>
                     </View>
                     <View style={styles.redirectButton}>

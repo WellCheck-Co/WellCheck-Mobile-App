@@ -21,7 +21,7 @@ export default class FloaterState extends Component{
     }
 
     _details = (floater_id, floater_name) => {
-        this.props.navigation('Details', {floater_id:floater_id, floater_name:floater_name})
+        this.props.navigation('Details', {floater_id:floater_id, floater_name:floater_name, back_to_devices:true})
     }
 
     render(){

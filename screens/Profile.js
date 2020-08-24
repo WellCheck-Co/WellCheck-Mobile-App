@@ -11,14 +11,12 @@ export default class Settings extends React.Component {
       view_change_firstname: false,
       view_change_lastname: false,
       view_change_email: false,
-      view_change_password: false,
       view_change_phone:false,
       user_info:null,
       first_name: null,
       last_name: null,
       phone_number: null,
       email: null,
-      password: null,
     }
   }
 
@@ -104,11 +102,6 @@ export default class Settings extends React.Component {
     else
       this.setState({view_change_email: false})
 
-    if (field == 'password' && this.state.view_change_password === false)
-      this.setState({view_change_password: true})
-    else
-      this.setState({view_change_password: false})
-
     if (field == 'phone' && this.state.view_change_phone === false)
       this.setState({view_change_phone: true})
     else
@@ -123,34 +116,26 @@ export default class Settings extends React.Component {
     let view_change_lastname = this.state.view_change_lastname === true ? <View style={{flexDirection:'row',flexWrap:'wrap', marginTop:5}}><TextInput style={ styles.viewTextInput } onChangeText={(text) => this.state.user_info['lastname'] = text} placeholder={this.state.user_info['lastname']}/></View> : <View></View>;
     let view_change_phone = this.state.view_change_phone === true ? <View style={{flexDirection:'row',flexWrap:'wrap', marginTop:5}}><TextInput style={ styles.viewTextInput }  onChangeText={(text) => this.state.user_info['phone'] = text} placeholder={this.state.user_info['phone']} /></View> : <View></View>;
     let view_change_email = this.state.view_change_email === true ? <View style={{flexDirection:'row',flexWrap:'wrap', marginTop:5}}><TextInput style={ styles.viewTextInput }  onChangeText={(text) => this.state.user_info['email'] = text} placeholder={this.state.user_info['email']}/></View> : <View></View>;
-    let view_change_password = this.state.view_change_password === true ? <View style={{flexDirection:'row',flexWrap:'wrap', marginTop:5}}><TextInput style={ styles.viewTextInput }onChangeText={(text) => this.state.user_info['password'] = text} /></View> : <View></View>;
 
     let save
-    if (this.state.view_change_email || this.state.view_change_password || this.state.view_change_firstname || this.state.view_change_lastname || this.state.view_change_phone) {
+    if (this.state.view_change_email || this.state.view_change_firstname || this.state.view_change_lastname || this.state.view_change_phone) {
       save = <View style={{alignItems:'center', justifyContent:'center', marginTop:30 }}><TouchableOpacity style={{ borderRadius:10, alignItems:'center', justifyContent:'center', width:200,  height:40, backgroundColor:'#1C90FF'}} onPress={() => this._send()}><Text style={{ fontSize:10, color:'white' }}>Send</Text></TouchableOpacity></View>
     }
     
     return (
-      <View style={{ marginTop: Constants.statusBarHeight, }}>
+      <View style={{ marginTop: Constants.statusBarHeight}}>
         {
           this.state.user_info?
           <View>
-          <View style={{ justifyContent:'center', alignItems:'center', height:150}}>
+          {/* <View style={{ justifyContent:'center', alignItems:'center', height:150}}>
           <Image source={require('../assets/images/logo/logo_avatar_profil.png')} style={ styles.logoImage } />
-        </View>
-        <View style={{ justifyContent:'center', alignItems:'center', marginTop:-20, }}>
-          <Text style={{ fontSize: 30 }}>{this.state.user_info['firstname'] == "Enter your first name" ? null : this.state.user_info['firstname']} {this.state.user_info['lastname'] == "Enter your last name" ? null : this.state.user_info['lastname']}</Text>
+        </View> */}
+        <View style={{ justifyContent:'center', alignItems:'center', marginTop:"50%"}}>
+          <Text style={{ fontSize: 30 }}>{this.state.user_info['firstname'] == "Enter your first name" && this.state.user_info['lastname'] == "Enter your last name" ? "Profile" : this.state.user_info['firstname'] + " " + this.state.user_info['lastname']}</Text>
           <Text style={{ fontSize: 10 }}>Creation date : {new Date(this.state.user_info['date'] / 1000).toLocaleDateString("en-US")}</Text>
         </View>
-        <KeyboardAvoidingView keyboardVerticalOffset = {Header.HEIGHT + 20} style = {{ marginTop:10, marginLeft:30, marginRight:30, height:400 }} behavior = "padding" >
+        <KeyboardAvoidingView keyboardVerticalOffset = {Header.HEIGHT} style = {{ marginTop:"20%", marginLeft:30, marginRight:30, height:400 }} behavior = "padding" >
         <ScrollView>
-          <TouchableOpacity onPress={() => this._display_input('email')}>
-            <View style={styles.viewScrollView}>
-              <Image source={require('../assets/images/profil/arobase.png')} style={{height:30, width:30, marginLeft:10, marginRight:10}}/>
-              <Text style={{ fontSize: 20, color: '#1C90FF' }}> Email</Text>
-            </View>
-            { view_change_email }
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => this._display_input('firstname')}>
             <View style={styles.viewScrollView}>
               <Image source={require('../assets/images/profil/profil.png')} style={{height:30, width:30, marginLeft:10, marginRight:10}}/>
@@ -165,19 +150,19 @@ export default class Settings extends React.Component {
             </View>
             { view_change_lastname }
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => this._display_input('email')}>
+            <View style={styles.viewScrollView}>
+              <Image source={require('../assets/images/profil/arobase.png')} style={{height:30, width:30, marginLeft:10, marginRight:10}}/>
+              <Text style={{ fontSize: 20, color: '#1C90FF' }}> Email</Text>
+            </View>
+            { view_change_email }
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => this._display_input('phone')}>
             <View style={styles.viewScrollView}>
               <Image source={require('../assets/images/profil/phone.png')} style={{height:30, width:30, marginLeft:10, marginRight:10}}/>
               <Text style={{ fontSize: 20, color: '#1C90FF' }}> Phone number</Text>
             </View>
             { view_change_phone }
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => this._display_input('password')}>
-            <View style={styles.viewScrollView}>
-              <Image source={require('../assets/images/profil/password.png')} style={{height:30, width:30, marginLeft:10, marginRight:10}}/>
-              <Text style={{ fontSize: 20, color: '#1C90FF' }}> Password</Text>
-            </View>
-            { view_change_password }
           </TouchableOpacity>
         </ScrollView>
         </KeyboardAvoidingView>

@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 export default class CustomLineChart extends Component{
 
     static propTypes = {
-        data : PropTypes.Array,
+        data : PropTypes.object.isRequired,
         bezier : PropTypes.bool,
         type : PropTypes.string,
     }

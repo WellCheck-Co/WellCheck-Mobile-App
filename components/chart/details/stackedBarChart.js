@@ -6,7 +6,7 @@ import PropTypes from 'prop-types';
 export default class CustomBarChart extends Component{
 
     static propTypes = {
-        data : PropTypes.Array,
+        data : PropTypes.object.isRequired,
     }
 
     render() {

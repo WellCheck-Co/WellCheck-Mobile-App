@@ -20,12 +20,12 @@ export default class Devices extends React.Component {
         error:null,
         error_share:null,
         view:"own",
-        polluted_devices:0,
-        clean_devices:0,
-        without_data_devices:0,
-        shared_polluted_devices:0,
-        shared_clean_devices:0,
-        shared_without_data_devices:0,
+        polluted_devices:null,
+        clean_devices:null,
+        without_data_devices:null,
+        shared_polluted_devices:null,
+        shared_clean_devices:null,
+        shared_without_data_devices:null,
         floater_selected_for_share:[],
         email_for_share:null,
       }
@@ -33,11 +33,12 @@ export default class Devices extends React.Component {
 
   componentDidMount(){
     this._request_get_all_floater_infos()
+    this.forceUpdate()
   }
 
   addFLoaterSelectedForShare(id){
-    this.state.floater_selected_for_share.push(id);
-    console.log(this.state.floater_selected_for_share)
+    if(this.state.floater_selected_for_share.includes(id) == false)
+      this.state.floater_selected_for_share.push(id);
   }
 
   removeFLoaterSelectedForShare(id){
@@ -147,6 +148,7 @@ export default class Devices extends React.Component {
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
+                key={floater["name"]}
               />);
         }else{
             return(
@@ -157,6 +159,7 @@ export default class Devices extends React.Component {
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
+                key={floater["name"]}
               />);
           }
         }
@@ -177,6 +180,7 @@ export default class Devices extends React.Component {
                 selected={this.addFLoaterSelectedForShare.bind(this)}
                 removed={this.removeFLoaterSelectedForShare.bind(this)}
                 device_id={floater['id']}
+                key={floater["name"]}
               />);
         }else{
             return(
@@ -187,6 +191,7 @@ export default class Devices extends React.Component {
                 selected={this.addFLoaterSelectedForShare.bind(this)}
                 removed={this.removeFLoaterSelectedForShare.bind(this)}
                 device_id={floater['id']}
+                key={floater["name"]}
               />);
           }
         }
@@ -288,10 +293,10 @@ export default class Devices extends React.Component {
 
   _closeModalShareFloater = () =>{
     this.setState({isModalShareFloaterVisible:false})
+    this.setState({floater_selected_for_share: []})
   }
 
-
-  render() {
+  _get_data_pie_chart () {
     const pie_chart_data =
     [
       {
@@ -316,7 +321,10 @@ export default class Devices extends React.Component {
         legendFontSize: 15
       }
     ];
+    return pie_chart_data
+  }
 
+  _get_pie_chart_data_shared () {
     const pie_chart_data_shared =
     [
       {
@@ -341,25 +349,20 @@ export default class Devices extends React.Component {
         legendFontSize: 15
       }
     ];
-
-    // const pie_chart_empty_data = [
-    //   {
-    //     name: "Without data",
-    //     population: 0,
-    //     color: "#aab938",
-    //     legendFontColor: "#7F7F7F",
-    //     legendFontSize: 15
-    //   }
-    // ];
+    return pie_chart_data_shared;
+  }
 
 
+  render() {
     return (
       <SafeAreaView style={styles.container}>
-        {
-          this.state.view == "own" ?
-            <CustomPieChart data={pie_chart_data}/>
-            :
-            <CustomPieChart data={pie_chart_data_shared}/>
+        {this.state.clean_devices != null && this.state.polluted_devices != null && this.state.without_data_devices != null ?
+            this.state.view == "own" ?
+              <CustomPieChart data={this._get_data_pie_chart()}/>
+              :
+              <CustomPieChart data={this._get_pie_chart_data_shared()}/>
+        :
+          <ActivityIndicator size="large" color="#0098EB" />
         }
 
         <View style={styles.viewTypeDevice}>
@@ -395,17 +398,17 @@ export default class Devices extends React.Component {
           {
             this.state.view == "own" ?
               this.state.all_floaters_data ?
-              this._display_prorietary_floaters()
-              :
-              <View style={{justifyContent:'center', alignItems:'center', marginTop:'10%', height:200}}><ActivityIndicator size="large" color="#0098EB" /></View>
+                this._display_prorietary_floaters()
+                :
+                <View style={{justifyContent:'center', alignItems:'center', marginTop:'10%', height:200}}><ActivityIndicator size="large" color="#0098EB" /></View>
             :
               this.state.all_floaters_data ?
-              this._display_shared_floaters()
-              :
-              <View style={{justifyContent:'center', alignItems:'center', marginTop:'10%', height:200}}><ActivityIndicator size="large" color="#0098EB" /></View>
+                this._display_shared_floaters()
+                :
+                <View style={{justifyContent:'center', alignItems:'center', marginTop:'10%', height:200}}><ActivityIndicator size="large" color="#0098EB" /></View>
           }
-
         </ScrollView>
+
 
 
         <Modal isVisible={this.state.isModalAddFloaterVisible} onBackdropPress={()=>this._closeModalAddFloater()} style={{ backgroundColor:'white', borderRadius:30 ,maxHeight:Dimensions.get('window').height / 3}}>
@@ -427,11 +430,11 @@ export default class Devices extends React.Component {
             {
                     this.state.error
                 ?
-                    <View style={{justifyContent:'center', alignItems:'center'}}>
-                        <Text style={{color:'red'}}>{this.state.error}</Text>
-                    </View>
+                  <View style={{justifyContent:'center', alignItems:'center'}}>
+                      <Text style={{color:'red'}}>{this.state.error}</Text>
+                  </View>
                 :
-                    null
+                  null
             }
           </View>
         </Modal>
