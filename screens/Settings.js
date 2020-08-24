@@ -107,7 +107,7 @@ export default class Settings extends React.Component {
           {this.state.user_info?
             <View style={{marginBottom:20}}>
               <View style={{ justifyContent:'center', alignItems:'center'}}>
-                <Text style={{ fontSize: 30 }}>{this.state.user_info['firstname'] == "Enter your first name" && this.state.user_info['lastname'] == "Enter your last name" ? "Profile" : this.state.user_info['firstname'] + " " + this.state.user_info['lastname']}</Text>
+                <Text style={{ fontSize: 30 }}>{this.state.user_info['firstname'] == "Enter your first name" || this.state.user_info['lastname'] == "Enter your last name" ? "Profile" : this.state.user_info['firstname'] + " " + this.state.user_info['lastname']}</Text>
                 <Text style={{ fontSize: 10 }}>Creation date : {new Date(this.state.user_info['date'] / 1000).toLocaleDateString("en-US")}</Text>
               </View>
               <KeyboardAvoidingView style={{ marginLeft:30, marginRight:30 }} behavior="padding">
@@ -144,12 +144,23 @@ export default class Settings extends React.Component {
                     {/* { view_change_phone } */}
                   </TouchableOpacity>
                   <View style={{marginTop:"20%"}}>
-                    <TouchableOpacity onPress={() => this._export_data_from_user()}>
-                      <View style={styles.viewScrollViewProfile}>
+                  <View style={styles.viewScrollViewName}>
                       <Image source={require('../assets/images/profil/data.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
-                        <Text style={{ fontSize: 20, color: '#636363' }}> Export my data</Text>
+                      <View style={{alignItems:"stretch", width:"80%"}}>
+                        <View style={{flexDirection:"row", borderBottomWidth:1, borderColor:"#e8e8e8"}}>
+                          <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                            <Text style={{ fontSize: 20, color: '#636363' }}> Export my data</Text>
+                            {/* { view_change_firstname } */}
+                          </TouchableOpacity>
+                        </View>
+                        <View style={{flexDirection:"row"}}>
+                          <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                            <Text style={{ fontSize: 20, color: '#636363' }}> Delete my data</Text>
+                            {/* { view_change_firstname } */}
+                          </TouchableOpacity>
+                        </View>
                       </View>
-                    </TouchableOpacity>
+                    </View>
                     <View style={styles.viewScrollViewName}>
                       <Image source={require('../assets/images/profil/test1_last_logo.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
                       <View style={{alignItems:"stretch", width:"80%"}}>
