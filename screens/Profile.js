@@ -71,7 +71,6 @@ export default class Settings extends React.Component {
           });
           const responseJson = await response.json();
           if (responseJson["succes"] == false) {
-              console.log(responseJson)
               this.setState({error:true})
           }
           if (responseJson["succes"] == true) {

@@ -5,6 +5,7 @@ import Modal from 'react-native-modal';
 import CustomPieChart from '../../components/chart/devices/pieChart'
 import FloaterState from '../../components/touchableOpacity/devices/floaterState/floaterState'
 import FloaterStateForShare from '../../components/touchableOpacity/devices/floaterState/floaterStateForShare'
+import { NavigationEvents } from 'react-navigation';
 
 export default class Devices extends React.Component {
 
@@ -22,10 +23,10 @@ export default class Devices extends React.Component {
         view:"own",
         polluted_devices:null,
         clean_devices:null,
-        without_data_devices:null,
+        medium_devices:null,
         shared_polluted_devices:null,
         shared_clean_devices:null,
-        shared_without_data_devices:null,
+        shared_medium_devices:null,
         floater_selected_for_share:[],
         email_for_share:null,
       }
@@ -33,7 +34,6 @@ export default class Devices extends React.Component {
 
   componentDidMount(){
     this._request_get_all_floater_infos()
-    this.forceUpdate()
   }
 
   addFLoaterSelectedForShare(id){
@@ -66,7 +66,6 @@ export default class Devices extends React.Component {
       });
       const responseJson = await response.json();
       if (responseJson["succes"] == false) {
-        console.log(responseJson)
           this.setState({error_share:true})
       }
       if (responseJson["succes"] == true) {
@@ -95,7 +94,6 @@ export default class Devices extends React.Component {
         const responseJson = await response.json();
         if (responseJson["succes"] == false) {
             this.setState({error:responseJson['error']})
-            console.log(responseJson)
         }
         if (responseJson["succes"] == true) {
             this.setState({all_floaters_data:responseJson['data']['points']})
@@ -112,26 +110,24 @@ export default class Devices extends React.Component {
   }
 
   _fill_data_pi_chart_proprietary(){
-    this.setState({clean_devices:0, polluted_devices:0, without_data_devices:0})
+    this.setState({clean_devices:0, polluted_devices:0, medium_devices:0})
     this.state.all_floaters_data.proprietary.map(floater =>
       {
+        // console.log(floater['data'])
+        // console.log(floater['data'].length-1)
         if(floater['data'].length > 0)
-          floater['data'][floater['data'].length-1]["data"]["data"]['note'] >= 10 ? this.setState({clean_devices:this.state.clean_devices+1}) : this.setState({polluted_devices:this.state.polluted_devices+1})
-        else
-          this.setState({without_data_devices:this.state.without_data_devices+1})
+          floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 7.5 ? this.setState({polluted_devices:this.state.polluted_devices+1}) : (floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 13.5 ? this.setState({medium_devices:this.state.medium_devices+1}) : this.setState({clean_devices:this.state.clean_devices+1}))
       }
     )
   }
 
   _fill_data_pi_chart_shared(){
-    this.setState({shared_clean_devices:0, shared_polluted_devices:0, shared_without_data_devices:0})
+    this.setState({shared_clean_devices:0, shared_polluted_devices:0, shared_medium_devices:0})
     this.state.all_floaters_data.shared.map(floater =>
       {
         if(floater['data'].length > 0)
-          floater['data'][floater['data'].length-1]["data"]["data"]['note'] >= 10 ? this.setState({clean_devices:this.state.share_clean_devices+1}) : this.setState({polluted_devices:this.state.shared_polluted_devices+1})
-        else
-          this.setState({shared_without_data_devices:this.state.shared_without_data_devices+1})
-      } 
+          floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 7.5 ? this.setState({shared_polluted_devices:this.state.shared_polluted_devices+1}) : (floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 13.5 ? this.setState({shared_medium_devices:this.state.shared_medium_devices+1}): this.setState({shared_clean_devices:this.state.shared_clean_devices+1}))
+      }
     )
   }
 
@@ -139,27 +135,32 @@ export default class Devices extends React.Component {
     return (
       this.state.all_floaters_data.proprietary.map(floater => 
         {
+          let label = floater.shared ? 'shared' : (floater.test ? 'test' : 'your')
           if(floater['data'].length > 0){
+            let long = floater['data'][floater['data'].length-1]["data"]["pos"]['lng'].toString();
+            let lat = floater['data'][floater['data'].length-1]["data"]["pos"]['lat'].toString();
             return (
               <FloaterState
-                point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] >= 10 ? "blue" : "red"}
-                name={floater["name"]}
-                location={"long: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lng']+"   lat: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lat']}
+                point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 7.5 ? "red" : (floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 13.5 ? "orange" : "green")}
+                name={floater['name']}
+                location={"long: "+long.slice(0, 8)+"   lat: "+lat.slice(0, 8)}
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
                 key={floater["name"]}
+                label={label}
               />);
         }else{
             return(
               <FloaterState
                 point_img={"grey"}
-                name={floater["name"]}
+                name={floater['name']}
                 location={"long: undefined   lat: undefined"}
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
                 key={floater["name"]}
+                label={label}
               />);
           }
         }
@@ -172,17 +173,19 @@ export default class Devices extends React.Component {
       this.state.all_floaters_data.proprietary.map(floater => 
         {
           if(floater['data'].length > 0){
+            let long = floater['data'][floater['data'].length-1]["data"]["pos"]['lng'].toString();
+            let lat = floater['data'][floater['data'].length-1]["data"]["pos"]['lat'].toString();
             return (
               <FloaterStateForShare
-                point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] >= 10 ? "blue" : "red"}
+                point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 7.5 ? "red" : (floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 13.5 ? "orange" : "green")}
                 name={floater["name"]}
-                location={"long: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lon']+"   lat: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lat']}
+                location={"long: "+long.slice(0, 8)+"   lat: "+lat.slice(0, 8)}
                 selected={this.addFLoaterSelectedForShare.bind(this)}
                 removed={this.removeFLoaterSelectedForShare.bind(this)}
                 device_id={floater['id']}
                 key={floater["name"]}
               />);
-        }else{
+          }else{
             return(
               <FloaterStateForShare
                 point_img={"grey"}
@@ -203,15 +206,20 @@ export default class Devices extends React.Component {
     return (
       this.state.all_floaters_data.shared.map(floater => 
         {
+          let label = floater.shared ? 'shared' : (floater.test ? 'test' : 'your')
           if(floater['data'].length > 0){
+            let long = floater['data'][floater['data'].length-1]["data"]["pos"]['lng'].toString();
+            let lat = floater['data'][floater['data'].length-1]["data"]["pos"]['lat'].toString();
             return (
               <FloaterState
-                point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] >= 10 ? "blue" : "red"}
+                point_img={floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 7.5 ? "red" : (floater['data'][floater['data'].length-1]["data"]["data"]['note'] < 13.5 ? "orange" : "green")}
                 name={floater["name"]}
-                location={"long: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lon']+"   lat: "+floater['data'][floater['data'].length-1]["data"]["pos"]['lat']}
+                location={"long: "+long.slice(0, 8)+"   lat: "+lat.slice(0, 8)}
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
+                key={floater['id']}
+                label={label}
               />);
           }
           else{
@@ -223,6 +231,7 @@ export default class Devices extends React.Component {
                 owner="me"
                 id={floater['id']}
                 navigation={this.props.navigation.navigate}
+                key={floater['id']}
               />);
           }
         }
@@ -241,8 +250,8 @@ export default class Devices extends React.Component {
             },
             body: JSON.stringify({
                 "id_sig":this.field.sigfox_id,
-                "lat":48.9534,
-                "lng":2.4488
+                "lat":Math.random() * (45.5 - 50) + 45.5,
+                "lng":Math.random() * (2 - 3) + 2
             })
         });
         const responseJson = await response.json();
@@ -261,10 +270,6 @@ export default class Devices extends React.Component {
             error:'Cann\'t connect to server'
         })
     }        
-  }
-
-  _details = () => {
-    this.props.navigation.navigate('Details');
   }
 
   _add_floater_by_qr_code = () => {
@@ -302,7 +307,7 @@ export default class Devices extends React.Component {
       {
         name: "Clean",
         population: this.state.clean_devices,
-        color: "#0098EB",
+        color: "#44d44d",
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
       },
@@ -314,9 +319,9 @@ export default class Devices extends React.Component {
         legendFontSize: 15
       },
       {
-        name: "Without data",
-        population: this.state.without_data_devices,
-        color: "#a8a8a8",
+        name: "Medium",
+        population: this.state.medium_devices,
+        color: "#e8ba00",
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
       }
@@ -330,7 +335,7 @@ export default class Devices extends React.Component {
       {
         name: "Clean",
         population: this.state.shared_clean_devices,
-        color: "#0098EB",
+        color: "#44d44d",
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
       },
@@ -342,9 +347,9 @@ export default class Devices extends React.Component {
         legendFontSize: 15
       },
       {
-        name: "Without data",
-        population: this.state.shared_without_data_devices,
-        color: "#a8a8a8",
+        name: "Medium",
+        population: this.state.shared_medium_devices,
+        color: "#e8ba00",
         legendFontColor: "#7F7F7F",
         legendFontSize: 15
       }
@@ -356,10 +361,12 @@ export default class Devices extends React.Component {
   render() {
     return (
       <SafeAreaView style={styles.container}>
-        {this.state.clean_devices != null && this.state.polluted_devices != null && this.state.without_data_devices != null ?
+        <NavigationEvents onDidFocus={() => this._request_get_all_floater_infos()}/>
+        {this.state.clean_devices != null && this.state.polluted_devices != null && this.state.medium_devices != null ?
             this.state.view == "own" ?
               <CustomPieChart data={this._get_data_pie_chart()}/>
               :
+              // null
               <CustomPieChart data={this._get_pie_chart_data_shared()}/>
         :
           <ActivityIndicator size="large" color="#0098EB" />

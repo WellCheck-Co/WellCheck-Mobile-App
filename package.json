@@ -30,6 +30,7 @@
     "react-native-modal": "^11.5.6",
     "react-native-orientation-locker": "^1.1.8",
     "react-native-paper": "^3.6.0",
+    "react-native-pdf": "^6.2.0",
     "react-native-permissions": "^2.1.2",
     "react-native-progress": "^4.1.0",
     "react-native-qrcode-scanner": "^1.4.0",
@@ -39,13 +40,15 @@
     "react-native-svg-uri": "^1.2.3",
     "react-native-table-component": "^1.2.1",
     "react-native-web": "~0.11.7",
+    "react-native-webview": "^10.8.2",
     "react-navigation": "^3.13.0",
     "react-navigation-material-bottom-tabs": "^1.0.0",
     "react-navigation-stack": "^2.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",
-    "babel-preset-expo": "~8.0.0"
+    "babel-preset-expo": "~8.0.0",
+    "react-native-clean-project": "^3.4.0"
   },
   "private": true
 }

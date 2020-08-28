@@ -86,7 +86,6 @@ export default class BottomLoginButtons extends Component{
               this.setState({
                 error:'Cannot create this account'
               })
-              console.log(responseJson)
             }
             if (responseJson["succes"] == true) {
                 this.setState({error:'Mail sent'})
@@ -176,7 +175,7 @@ export default class BottomLoginButtons extends Component{
 
 const styles = StyleSheet.create({
     viewRedirectButton:{
-        marginBottom:'5%',
+        marginBottom:2,
     },
 
     redirectButton:{

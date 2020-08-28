@@ -48,10 +48,9 @@ export default class LoginFields extends Component {
         if(this.props.page == "Login"){
             return (
                 <KeyboardAvoidingView
-                    keyboardVerticalOffset = {Header.HEIGHT + 20}
-                    style = {{ flex: 1, marginTop:'50%' }}
+                    keyboardVerticalOffset = {Header.HEIGHT}
+                    style = {{ }}
                     behavior = "padding" >
-
                     <View style={{ justifyContent:'center', alignItems:'center' }}>
                         <View style={styles.viewInput}>
                             <Text style={styles.textNameField}>E-mail address :</Text>
@@ -112,8 +111,7 @@ export default class LoginFields extends Component {
         }else if (this.props.page == "Register"){
             return (
                 <KeyboardAvoidingView
-                    keyboardVerticalOffset = {Header.HEIGHT + 20}
-                    style = {{ flex: 1, marginTop:'40%' }}
+                    style = {{}}
                     behavior = "padding" >
                     <View style={{ justifyContent:'center', alignItems:'center' }}>
                         <View style={styles.viewInput}>
@@ -162,7 +160,7 @@ const styles = StyleSheet.create({
     },
 
     viewInput:{
-        borderRadius:2,
+        borderRadius:5,
         height:55,
         marginTop:10,
         width: '80%',

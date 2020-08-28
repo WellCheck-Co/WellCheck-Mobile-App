@@ -4,14 +4,13 @@ import MapView, { Marker, Callout } from 'react-native-maps';
 import { Bar } from 'react-native-progress';
 import Constants from 'expo-constants';
 import { SvgXml } from "react-native-svg";
+import { NavigationEvents } from 'react-navigation';
 
 const twoTiersWidth = Dimensions.get("window").width * 2 / 3;
 
 export default class WCMap extends React.Component {
     constructor(props) {
         super(props);
-        this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-        // this.markers = [];
         this.state = {
             mapRegion: null,
             locationResult: null,
@@ -34,7 +33,6 @@ export default class WCMap extends React.Component {
             ["#03ff00", "#039900"]
         ];
 
-
         let svg = '\
         <svg height="558pt" viewBox="0 0 558 558" width="558pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\
             <linearGradient id="a" gradientUnits="userSpaceOnUse" x1="0" x2="558" y1="279" y2="279">\
@@ -47,7 +45,7 @@ export default class WCMap extends React.Component {
         </svg>\
         '
         
-        return <SvgXml xml={svg} width="50" height="50"/>;
+        return <SvgXml xml={svg} width="40" height="40"/>;
     }
 
     getMarkerById(id) {
@@ -96,8 +94,7 @@ export default class WCMap extends React.Component {
                 this.setState({error:responseJson['error']})
             }
             if (responseJson["succes"] == true) {
-                this.setState({markers: this.getMyMarkers(responseJson['data']['points']['proprietary'])});
-                this.state.markers.push(this.getSharedMarkers(responseJson['data']['points']['shared']));
+                this.setState({markers: this.getMarkers(responseJson['data']['points'])})
             }
         }
         catch (error) {
@@ -107,69 +104,70 @@ export default class WCMap extends React.Component {
         }        
       }
 
-    getMyMarkers(data) {
-        return (
-            data.map(floater => 
-            {    
-                if(floater['data'].length > 0){
-                    return (
-                        {
-                            id: floater['id'],
-                            latlng: {
-                                latitude: parseFloat(floater['data'][0]["data"]["pos"]['lat']),
-                                longitude: parseFloat(floater['data'][0]["data"]["pos"]['lng'])
-                            },
-                            name: floater['name'],
-                            since: new Date(floater['date'] / 1000).toLocaleDateString("en-US"),
-                            lastReport: new Date(floater['data'][0]['date'] / 1000).toLocaleDateString("en-US"),
-                            note: floater['data'][0]['data']['data']['note'],
-                            progressBar: {
-                                note: floater['data'][0]['data']['data']['note']/20,
-                                color: this.getColorFromNote(floater['data'][0]['data']['data']['note']*10)
-                            }
-                        }
-                    );
-                }
-            })
-        );
+    getMarkers (data) {
+        let markers = []
+        data.proprietary.map(floater => {
+            if(floater['data'].length > 0){
+                markers.push(
+                    {
+                        id: floater['id'],
+                        latlng: {
+                            latitude: parseFloat(floater['data'][0]["data"]["pos"]['lat']),
+                            longitude: parseFloat(floater['data'][0]["data"]["pos"]['lng'])
+                        },
+                        name: floater['name'],
+                        since: new Date(floater['date'] / 1000).toLocaleDateString("en-US"),
+                        lastReport: new Date(floater['data'][floater['data'].length-1]['date'] / 1000).toLocaleDateString("en-US"),
+                        note: floater['data'][floater['data'].length-1]['data']['data']['note'],
+                        progressBar: {
+                            note: floater['data'][floater['data'].length-1]['data']['data']['note']/20,
+                            color: this.getColorFromNote(floater['data'][floater['data'].length-1]['data']['data']['note']*10)
+                        },
+                        shared: false,
+                        test: floater['test']
+                    }
+                );
+            }
+        })
+        data.shared.map(floater => {
+            if(floater['data'].length > 0){
+                markers.push(
+                    {
+                        id: floater['id'],
+                        latlng: {
+                            latitude: parseFloat(floater['data'][0]["data"]["pos"]['lat']),
+                            longitude: parseFloat(floater['data'][0]["data"]["pos"]['lng'])
+                        },
+                        name: floater['name'],
+                        since: new Date(floater['date'] / 1000).toLocaleDateString("en-US"),
+                        lastReport: new Date(floater['data'][floater['data'].length-1]['date'] / 1000).toLocaleDateString("en-US"),
+                        note: floater['data'][floater['data'].length-1]['data']['data']['note'],
+                        progressBar: {
+                            note: floater['data'][floater['data'].length-1]['data']['data']['note']/20,
+                            color: this.getColorFromNote(floater['data'][floater['data'].length-1]['data']['data']['note']*10)
+                        },
+                        shared: true,
+                        test: floater['test']
+                    }
+                );
+            }
+        })
+        return markers;
     }
 
-    getSharedMarkers(data) {
-        return (
-            data.map(floater => 
-            {    
-                if(floater['data'].length > 0){
-                    return (
-                        {
-                            id: floater['id'],
-                            latlng: {
-                                latitude: parseFloat(floater['data'][0]["data"]["pos"]['lat']),
-                                longitude: parseFloat(floater['data'][0]["data"]["pos"]['lng'])
-                            },
-                            name: floater['name'],
-                            since: new Date(floater['date'] / 1000).toLocaleDateString("en-US"),
-                            lastReport: new Date(floater['data'][0]['date'] / 1000).toLocaleDateString("en-US"),
-                            note: floater['data'][0]['data']['data']['note'],
-                            progressBar: {
-                                note: floater['data'][0]['data']['data']['note']/20,
-                                color: this.getColorFromNote(floater['data'][0]['data']['data']['note']*10)
-                            }
-                        }
-                    );
-                }
-            })
-        );
-    }
 
     display_markers(){
         return(
             this.state.markers.map(marker =>
                 {
-                    if(marker && marker.note > 0){
+                    if(marker){
+                        if(marker.note == 0)
+                            marker.note = 0.5;
+                        let label = marker.shared ? 'shared' : (marker.test ? 'test' : 'your')
                         return(
                             <Marker key={marker.id} coordinate={marker.latlng} anchor={{x: 0.5, y: 0.5}} ref={marker.id}>
-                                {this.buildsvg('test', marker.note)}
-                                    <Callout onPress={() => this._details(marker.id, marker.name)} style={{width: twoTiersWidth,paddingVertical: 10}}>
+                                {this.buildsvg(label, marker.note)}
+                                    <Callout onPress={() => this._details(marker.id, marker.name, label )} style={{width: twoTiersWidth,paddingVertical: 10}}>
                                         <View style={{alignItems:'center', justifyContent:'center', flexDirection:'row',flexWrap:'wrap',}}>
                                             <Text style={{fontWeight: "bold"}}>Name: </Text>
                                             <Text>{marker.name}</Text>
@@ -184,7 +182,7 @@ export default class WCMap extends React.Component {
                                         </View>
                                         <View style={{alignItems:'center', justifyContent:'center', flexDirection:'row',flexWrap:'wrap',marginTop:20}}>
                                             <Text style={{fontWeight: "bold"}}>Score: </Text>
-                                            <Text>{marker.note} / 20</Text>
+                                            <Text>{marker.note == 0.5 ? 0 : marker.note} / 20</Text>
                                         </View>
                                         <View style={{alignItems:'center'}}>
                                             <Bar progress={marker.progressBar.note} borderWidth={0} color={marker.progressBar.color} style={{backgroundColor: "darkgray"}} />
@@ -217,8 +215,9 @@ export default class WCMap extends React.Component {
         return "hsl("+ noteOn100 +", 100%, 40%)";
     }
 
-    _details = (id, floater_name) => {
-        this.props.navigation.navigate('Details', {floater_id:id, floater_name:floater_name, back_to_map:true});
+    _details = (id, floater_name, label) => {
+        this.setState({markers:[]})
+        this.props.navigation.navigate('Details', {floater_id:id, floater_name:floater_name, back_to_map:true, floater_type:label});
     }
     
     render() {
@@ -226,17 +225,19 @@ export default class WCMap extends React.Component {
           <View style={{flex: 1, marginTop: Constants.statusBarHeight,}}>
             {
                 this.state.mapRegion === null ?
-                <Text>Finding your current location...</Text> :
-                <View style={{flex: 1}}>
-                    <MapView
-                        style={{flex: 1}}
-                        region={this.state.mapRegion}
-                        customMapStyle={[{"featureType":"all","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"administrative.country","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.province","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"administrative.locality","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"administrative.locality","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.neighborhood","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"administrative.land_parcel","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"landscape","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"poi","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"road.local","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#1c94fe"},{"visibility":"on"},{"saturation":"0"},{"weight":"1.00"}]},{"featureType":"water","elementType":"geometry","stylers":[{"visibility":"on"}]},{"featureType":"water","elementType":"labels.text","stylers":[{"visibility":"simplified"},{"color":"#211267"}]},{"featureType":"water","elementType":"labels.icon","stylers":[{"weight":"2.54"},{"visibility":"off"}]}]}
-                        showsUserLocation={true}
-                    >
-                        {this.display_markers()}
-                    </MapView>
-                </View>
+                    <Text>Finding your current location...</Text> 
+                :
+                    <View style={{flex: 1}}>
+                        <NavigationEvents onDidFocus={() => this._request_get_all_floater_infos()}/> 
+                        <MapView
+                            style={{flex: 1}}
+                            region={this.state.mapRegion}
+                            customMapStyle={[{"featureType":"all","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#444444"}]},{"featureType":"administrative.country","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.province","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"administrative.locality","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"administrative.locality","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative.neighborhood","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"administrative.land_parcel","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#f2f2f2"}]},{"featureType":"landscape","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"poi","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"labels.text","stylers":[{"visibility":"simplified"}]},{"featureType":"road.arterial","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"road.local","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"road.local","elementType":"labels.text","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"labels","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#1c94fe"},{"visibility":"on"},{"saturation":"0"},{"weight":"1.00"}]},{"featureType":"water","elementType":"geometry","stylers":[{"visibility":"on"}]},{"featureType":"water","elementType":"labels.text","stylers":[{"visibility":"simplified"},{"color":"#211267"}]},{"featureType":"water","elementType":"labels.icon","stylers":[{"weight":"2.54"},{"visibility":"off"}]}]}
+                            showsUserLocation={true}
+                        >
+                            {this.display_markers()}
+                        </MapView>
+                    </View>
                 
             }
           </View>

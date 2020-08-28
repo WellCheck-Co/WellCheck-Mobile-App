@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, ScrollView, Text, TouchableOpacity, View, StyleSheet, KeyboardAvoidingView, ActivityIndicator } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View, StyleSheet, KeyboardAvoidingView, ActivityIndicator, TextInput } from 'react-native';
 import Constants from 'expo-constants';
 import LogoWellCheckTop from '../components/images/logoWellCheckTop/logoWellCheckTop';
 
@@ -18,7 +18,6 @@ export default class Settings extends React.Component {
 
   componentDidMount() {
     this._get_user_info();
-    console.log(this.state)
   }
 
   _export_data_from_user = () => {
@@ -50,7 +49,6 @@ export default class Settings extends React.Component {
         });
         const responseJson = await response.json();
         if (responseJson["succes"] == false) {
-            console.log(responseJson)
             this.setState({error:true})
         }
         if (responseJson["succes"] == true) {
@@ -87,7 +85,6 @@ export default class Settings extends React.Component {
               this.state.user_info['lastname'] = "Enter your last name"
             if (responseJson['data']['phone'] == null)
               this.state.user_info['phone'] = "Enter your phone number"
-            console.log(this.state)
         }
     }
     catch (error) {
@@ -98,6 +95,12 @@ export default class Settings extends React.Component {
   }
 
   render (){
+
+    let save;
+    if (this.state.view_change_email || this.state.view_change_firstname || this.state.view_change_lastname || this.state.view_change_phone) {
+      save = <View style={{alignItems:'center', justifyContent:'center', marginTop:30 }}><TouchableOpacity style={{ borderRadius:10, alignItems:'center', justifyContent:'center', width:200,  height:40, backgroundColor:'#1C90FF'}} onPress={() => this._send()}><Text style={{ fontSize:10, color:'white' }}>Send</Text></TouchableOpacity></View>
+    }
+
     return (
       <View style={{ marginTop: Constants.statusBarHeight, }}>
         <ScrollView>
@@ -115,67 +118,105 @@ export default class Settings extends React.Component {
                   <View style={styles.viewScrollViewName}>
                     <Image source={require('../assets/images/profil/avatar.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
                     <View style={{alignItems:"stretch", width:"80%"}}>
-                      <View style={{flexDirection:"row", borderBottomWidth:1, borderColor:"#e8e8e8"}}>
-                        <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                      <TouchableOpacity onPress={() => this.state.view_change_firstname ? this.setState({view_change_firstname:false}) : this.setState({view_change_firstname:true})}>
+                        <View style={{flexDirection:"row"}}>
                           <Text style={{ fontSize: 20, color: '#636363' }}> First name</Text>
-                          {/* { view_change_firstname } */}
-                        </TouchableOpacity>
-                      </View>
-                      <View style={{flexDirection:"row"}}>
-                        <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                        </View>
+                      </TouchableOpacity>
+                      { this.state.view_change_firstname != false ?
+                        <View style={{flexDirection:"row", backgroundColor:"white", marginBottom:2, borderRadius:7}}>
+                          <TextInput style={{width:"80%"}}  onChangeText={(text) => this.state.user_info['firstname'] = text} placeholder={" " + this.state.user_info['firstname']}/>
+                        </View>
+                      :
+                        null
+                      }
+                      <TouchableOpacity onPress={() => this.state.view_change_lastname ? this.setState({view_change_lastname:false}) : this.setState({view_change_lastname:true})}>
+                        <View style={{flexDirection:"row", borderTopWidth:1, borderColor:"#e8e8e8"}}>
                           <Text style={{ fontSize: 20, color: '#636363' }}> Last name</Text>
-                          {/* { view_change_firstname } */}
-                        </TouchableOpacity>
-                      </View>
+                        </View>
+                      </TouchableOpacity>
+                      { this.state.view_change_lastname != false ?
+                        <View style={{flexDirection:"row", backgroundColor:"white", marginBottom:2, borderRadius:7}}>
+                          <TextInput style={{width:"80%"}}  onChangeText={(text) => this.state.user_info['lastname'] = text} placeholder={" " + this.state.user_info['lastname']}/>
+                        </View>
+                      :
+                        null
+                      }
                     </View>
                   </View>
-                  <TouchableOpacity onPress={() => this._display_input('email')}>
-                    <View style={styles.viewScrollViewProfile}>
-                      <Image source={require('../assets/images/profil/arobase.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
-                      <Text style={{ fontSize: 20, color: '#636363' }}> Email</Text>
+
+
+                  <View style={styles.viewScrollViewProfile}>
+                    <Image source={require('../assets/images/profil/arobase.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
+                    <View style={{alignItems:"stretch", width:"80%"}}>
+                      <TouchableOpacity onPress={() => this.state.view_change_email ? this.setState({view_change_email:false}) : this.setState({view_change_email:true})}>
+                        <View style={{flexDirection:"row"}}>
+                          <Text style={{ fontSize: 20, color: '#636363' }}> Email</Text>
+                        </View>
+                      </TouchableOpacity>
+                      { this.state.view_change_email != false ?
+                        <View style={{flexDirection:"row", backgroundColor:"white", marginBottom:2, borderRadius:7}}>
+                          <TextInput style={{width:"80%"}}  onChangeText={(text) => this.state.user_info['email'] = text} placeholder={" " + this.state.user_info['email']}/>
+                        </View>
+                      :
+                        null
+                      }
                     </View>
-                    {/* { view_change_email } */}
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => this._display_input('phone')}>
-                    <View style={styles.viewScrollViewProfile}>
-                      <Image source={require('../assets/images/profil/phone.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
-                      <Text style={{ fontSize: 20, color: '#636363' }}> Phone number</Text>
+                  </View>
+
+
+                  <View style={styles.viewScrollViewProfile}>
+                    <Image source={require('../assets/images/profil/phone.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
+                    <View style={{alignItems:"stretch", width:"80%"}}>
+                      <TouchableOpacity onPress={() => this.state.view_change_phone ? this.setState({view_change_phone:false}) : this.setState({view_change_phone:true})}>
+                        <View style={{flexDirection:"row"}}>
+                          <Text style={{ fontSize: 20, color: '#636363' }}> Phone number</Text>
+
+                        </View>
+                      </TouchableOpacity>
+                      { this.state.view_change_phone != false ?
+                        <View style={{flexDirection:"row", backgroundColor:"white", marginBottom:2, borderRadius:7}}>
+                          <TextInput style={{width:"80%"}}  onChangeText={(text) => this.state.user_info['phone'] = text} placeholder={" " + this.state.user_info['phone']}/>
+                        </View>
+                      :
+                        null
+                      }
                     </View>
-                    {/* { view_change_phone } */}
-                  </TouchableOpacity>
+                  </View>
+
+
+                  { save }
+
+
                   <View style={{marginTop:"20%"}}>
-                  <View style={styles.viewScrollViewName}>
+                    <View style={styles.viewScrollViewName}>
                       <Image source={require('../assets/images/profil/data.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
                       <View style={{alignItems:"stretch", width:"80%"}}>
-                        <View style={{flexDirection:"row", borderBottomWidth:1, borderColor:"#e8e8e8"}}>
-                          <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                        <TouchableOpacity>
+                          <View style={{flexDirection:"row", borderBottomWidth:1, borderColor:"#e8e8e8"}}>
                             <Text style={{ fontSize: 20, color: '#636363' }}> Export my data</Text>
-                            {/* { view_change_firstname } */}
-                          </TouchableOpacity>
-                        </View>
-                        <View style={{flexDirection:"row"}}>
-                          <TouchableOpacity onPress={() => this._display_input('firstname')}>
-                            <Text style={{ fontSize: 20, color: '#636363' }}> Delete my data</Text>
-                            {/* { view_change_firstname } */}
-                          </TouchableOpacity>
-                        </View>
+                          </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                          <View style={{flexDirection:"row"}}>
+                              <Text style={{ fontSize: 20, color: '#636363' }}> Delete my data</Text>
+                          </View>
+                        </TouchableOpacity>
                       </View>
                     </View>
                     <View style={styles.viewScrollViewName}>
                       <Image source={require('../assets/images/profil/test1_last_logo.png')} style={{height:30, width:30, marginLeft:"5%", marginRight:"5%"}}/>
                       <View style={{alignItems:"stretch", width:"80%"}}>
-                        <View style={{flexDirection:"row", borderBottomWidth:1, borderColor:"#e8e8e8"}}>
-                          <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                        <TouchableOpacity>
+                          <View style={{flexDirection:"row", borderBottomWidth:1, borderColor:"#e8e8e8"}}>
                             <Text style={{ fontSize: 20, color: '#636363' }}> Terms of Use</Text>
-                            {/* { view_change_firstname } */}
-                          </TouchableOpacity>
-                        </View>
-                        <View style={{flexDirection:"row"}}>
-                          <TouchableOpacity onPress={() => this._display_input('firstname')}>
+                          </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                          <View style={{flexDirection:"row"}}>
                             <Text style={{ fontSize: 20, color: '#636363' }}> About WellCheck</Text>
-                            {/* { view_change_firstname } */}
-                          </TouchableOpacity>
-                        </View>
+                          </View>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </View>
@@ -209,7 +250,6 @@ const styles = StyleSheet.create({
 
   viewScrollViewName:{
     marginTop:10,
-    height:80,
     backgroundColor:'#f0f0f0',
     borderRadius:8,
     borderWidth:2,
@@ -220,7 +260,6 @@ const styles = StyleSheet.create({
 
   viewScrollViewProfile:{
     marginTop:10,
-    height:40,
     backgroundColor:'#f0f0f0',
     borderRadius:8,
     borderWidth:2,

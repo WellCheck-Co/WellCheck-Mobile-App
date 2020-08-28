@@ -7,6 +7,7 @@ import CustomLineChart from '../../components/chart/details/lineChart'
 import CustomBarChart from '../../components/chart/details/stackedBarChart'
 import { Bar } from 'react-native-progress';
 import { SvgXml } from "react-native-svg";
+import * as WebBrowser from 'expo-web-browser';
 
 export default class Details extends React.Component {
   constructor(props) {
@@ -17,6 +18,7 @@ export default class Details extends React.Component {
       floater_id:this.props.navigation.state.params.floater_id,
       floater_data:{},
       floater_name:this.props.navigation.state.params.floater_name,
+      floater_type:this.props.navigation.state.params.floater_type,
       bar_color:null,
       floater_score:null,
       isMonthModalVisible:false,
@@ -75,7 +77,7 @@ export default class Details extends React.Component {
             this.setState({error:true})
         }
         if (responseJson["succes"] == true) {
-            this.setState({floater_score:responseJson['data']['data'][['data'].length-1]['data']['data']['note'], floater_data:responseJson['data'], bar_color:this.getColorFromNote(responseJson['data']['data'][['data'].length-1]['data']['data']['note']*10)})
+            this.setState({floater_score:responseJson['data']['data'][responseJson['data']['data'].length-1]['data']['data']['note'], floater_data:responseJson['data'], bar_color:this.getColorFromNote(responseJson['data']['data'][responseJson['data']['data'].length-1]['data']['data']['note']*10)})
             this.fill_data()
         }
     }
@@ -135,7 +137,6 @@ export default class Details extends React.Component {
   }
 
   componentDidMount(){
-    console.disableYellowBox = true;
     this._request_get_all_floater_infos()
   }
 
@@ -236,6 +237,12 @@ export default class Details extends React.Component {
       />);
   }
 
+  _generate_report= async () => {
+    const now = new Date();
+    const date_past_one_week = new Date().setDate(now.getDate()-7)
+    return await WebBrowser.openBrowserAsync("https://doc.wellcheck.fr/src.php?id="+this.state.floater_id+"&from="+parseInt(date_past_one_week/1000,10)+"&to="+parseInt(now.getTime()/1000,10));
+  }
+
   buildsvg(choice, note) {
     const label = {
         'test': '#ff970f',
@@ -318,23 +325,25 @@ export default class Details extends React.Component {
             </View>
           </TouchableHighlight>
         </View>
-        <View style={{justifyContent:'center', alignItems:'center'}}>
-            {
-              this.state.data_redox.labels.length == 0 ?
-                <ActivityIndicator size="large" color="#0098EB" />
-              :
-              <View style={{marginTop:10}}>
-                <View style={{alignItems:'center', justifyContent:'center', flexDirection:'row',flexWrap:'wrap'}}>
-                  <Text style={{fontWeight: "bold"}}>Score: </Text>
-                  <Text>{this.state.floater_score} / 20</Text>
+        <View style={{backgroundColor:"#dbdbdb", borderBottomEndRadius:20, borderBottomStartRadius:20}}>
+          <View style={{justifyContent:'center', alignItems:'center'}}>
+              {
+                this.state.data_redox.labels.length == 0 ?
+                  <ActivityIndicator size="large" color="#0098EB" />
+                :
+                <View style={{marginTop:10}}>
+                  <View style={{alignItems:'center', justifyContent:'center', flexDirection:'row',flexWrap:'wrap'}}>
+                    <Text style={{fontWeight: "bold"}}>Score: </Text>
+                    <Text>{this.state.floater_score} / 20</Text>
+                  </View>
+                  <Bar progress={this.state.floater_score / 20} borderWidth={0} color={"hsl("+ this.state.floater_score * 10 +", 100%, 40%)"} style={{backgroundColor: "darkgray"}} />
                 </View>
-                <Bar progress={this.state.floater_score} borderWidth={0} color={this.state.bar_color} style={{backgroundColor: "darkgray"}} />
-              </View>
-            }
-          </View>
-          <View style={{justifyContent:'space-around', alignItems:'center', flexDirection:"row", marginTop:10, marginBottom:10, }}>
-            <Text style={{fontSize:30}}>{this.state.floater_name}</Text>
-            {this.buildsvg('test', this.state.floater_score)}
+              }
+            </View>
+            <View style={{justifyContent:'space-around', alignItems:'center', flexDirection:"row", marginTop:10, marginBottom:10, }}>
+              <Text style={{fontSize:30}}>{this.state.floater_name}</Text>
+                {this.buildsvg(this.state.floater_type, this.state.floater_score)}
+            </View>
           </View>
         
         <ScrollView>
@@ -367,7 +376,7 @@ export default class Details extends React.Component {
                 this.display_pie_chart("temp")
             }
             <View>
-            <TouchableOpacity onPress={() => this._details()}>
+            <TouchableOpacity onPress={() => this._generate_report()}>
               <View style={styles.view_touchable}>
                 <Text style={{ fontSize:20, marginLeft:15, marginRight:15, color:"white" }}>Generate weekly report</Text>
               </View>

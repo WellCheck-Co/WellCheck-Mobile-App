@@ -18,19 +18,23 @@ export default class FloaterState extends Component{
         owner : PropTypes.string,
         navigation : PropTypes.any,
         id : PropTypes.string,
+        label : PropTypes.string,
     }
 
-    _details = (floater_id, floater_name) => {
-        this.props.navigation('Details', {floater_id:floater_id, floater_name:floater_name, back_to_devices:true})
+    _details = (floater_id, floater_name, label) => {
+        this.props.navigation('Details', {floater_id:floater_id, floater_name:floater_name, back_to_devices:true, floater_type: label})
+    }
+
+    componentDidMount () {
     }
 
     render(){
-          if (this.props.point_img == "blue") {
+          if (this.props.point_img == "green") {
             return (
-            <TouchableOpacity onPress={() => this._details(this.props.id, this.props.name)}>
+            <TouchableOpacity onPress={() => this._details(this.props.id, this.props.name, this.props.label)}>
                 <View style={styles.view_touchable}>
                     <View style={styles.view_point_name}>
-                        <Image source={require("../../../../assets/images/points/point_bleu.png")} style={styles.img_point_bleu} />
+                        <Image source={require("../../../../assets/images/points/point_vert.png")} style={styles.img_point_bleu} />
                         <Text style={styles.device_name_text}>{this.props.name}</Text>
                     </View>
                     <Text style={styles.location_text}>{this.props.location}   |   Added by : {this.props.owner}</Text>
@@ -40,7 +44,7 @@ export default class FloaterState extends Component{
           }
           else if (this.props.point_img == "red") {
             return (
-            <TouchableOpacity onPress={() => this._details(this.props.id)}>
+            <TouchableOpacity onPress={() => this._details(this.props.id, this.props.name, this.props.label)}>
                 <View style={styles.view_touchable}>
                     <View style={styles.view_point_name}>
                         <Image source={require("../../../../assets/images/points/point_rouge.png")} style={styles.img_point_rouge} />
@@ -51,15 +55,17 @@ export default class FloaterState extends Component{
             </TouchableOpacity>
             );
           }
-          else if (this.props.point_img == "green") {
+          else if (this.props.point_img == "orange") {
             return (
+              <TouchableOpacity onPress={() => this._details(this.props.id, this.props.name, this.props.label)}>
                   <View style={styles.view_touchable}>
                       <View style={styles.view_point_name}>
-                          <Image source={require("../../../../assets/images/points/point_vert.png")} style={styles.img_point_bleu} />
+                          <Image source={require("../../../../assets/images/points/rond_orange.png")} style={styles.img_point_bleu} />
                           <Text style={styles.device_name_text}>{this.props.name}</Text>
                       </View>
                       <Text style={styles.location_text}>{this.props.location}   |   Added by : {this.props.owner}</Text>
                   </View>
+                </TouchableOpacity>
               );
           }
     }
