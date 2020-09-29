@@ -3,7 +3,6 @@ import { createMaterialBottomTabNavigator } from '@react-navigation/material-bot
 import { NavigationContainer } from '@react-navigation/native';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import Devices from './Devices/Index';
-import Profile from './Profile';
 import WCMap from './Map/Index';
 import Settings from './Settings';
 
@@ -21,10 +20,6 @@ export default function MyTabs() {
                 tabBarIcon: ({ color }) => {
                     return <MaterialIcon name={"map"} size={25} color={color} />;
                 }}} />
-                {/* <Tab.Screen name="Profile" component={Profile} options={{
-                tabBarIcon: ({ color }) => {
-                    return <MaterialIcon name={"person"} size={25} color={color} />;
-                }}} /> */}
                 <Tab.Screen name="Settings" component={Settings} options={{
                 tabBarIcon: ({ color }) => {
                     return <MaterialIcon name={"settings"} size={25} color={color} />;

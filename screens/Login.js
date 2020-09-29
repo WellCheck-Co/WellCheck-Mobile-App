@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import Constants from 'expo-constants';
 
 import LogoWellCheckTop from '../components/images/logoWellCheckTop/logoWellCheckTop';
@@ -26,24 +26,27 @@ export default class Login extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
+              style={styles.container}
+            >
           <View style={styles.body}>
 
             <LogoWellCheckTop/>
-            <LoginFields 
-              page="Login"
-              setMail={this.set_mail.bind(this)}
-              setPassword={this.set_password.bind(this)}
-            />
-            <BottomLoginButtons 
-              page="Login" 
-              navigation={this.props.navigation}
-              mail={this.state.mail}
-              password={this.state.password}
-            />
-
+              <LoginFields 
+                page="Login"
+                setMail={this.set_mail.bind(this)}
+                setPassword={this.set_password.bind(this)}
+              />
+              <BottomLoginButtons 
+                page="Login" 
+                navigation={this.props.navigation}
+                mail={this.state.mail}
+                password={this.state.password}
+              />
+            
           </View>
-      </View>
+      </KeyboardAvoidingView>
       );
   }
 

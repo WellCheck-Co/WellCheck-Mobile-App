@@ -1,8 +1,9 @@
 import React from 'react';
-import { Text, View, StyleSheet, Alert, Dimensions  } from 'react-native';
+import { Text, View, StyleSheet, Alert, Dimensions } from 'react-native';
 import * as Permissions from 'expo-permissions';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import Modal from 'react-native-modal';
+import Constants from 'expo-constants';
 
 
 export default class AddFloaterByQrcode extends React.Component {
@@ -12,8 +13,6 @@ export default class AddFloaterByQrcode extends React.Component {
     this.state = {
       hasCameraPermission: null,
       scanned: false,
-      // mail:this.props.navigation.state.params.mail,
-      // token: this.props.navigation.state.params.token,
       id:0,
       sig_id:"",
       isModalVisible:false
@@ -34,39 +33,43 @@ export default class AddFloaterByQrcode extends React.Component {
     this.field.sigfox_id = ''
   }
 
-  _sendInfo = () => {
-    fetch('http://51.158.114.39:8081/addpoint/',{
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        "mail":this.state.mail,
-        "token":this.state.token,
-        "key":this.state.id,
-        "sig_id":this.state.sig_id,
-      })
-    })
-    .then((response) => response.json())
-    .then((responseJson) => {
-      if (responseJson["succes"] == false){
+  _sendInfo = async () => {
+    try {
+      const response = await fetch('https://api.wellcheck.fr/point/add/', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'token':global.infos.api_token,
+              'usrtoken':global.infos.user_token,
+          },
+          body: JSON.stringify({
+              "id_sigfox":this.state.sig_id,
+              "lat":Math.random() * (45.5 - 50) + 45.5,
+              "lng":Math.random() * (2 - 3) + 2
+          })
+      });
+      const responseJson = await response.json();
+      if (responseJson["succes"] == false) {
         Alert.alert(responseJson['error'])
         this.setState({
           error: true
         })
         this._map()
-      }if (responseJson["succes"] == true){
+      }
+      if (responseJson["succes"] == true) {
         Alert.alert("Device added")
         this._map()
       }
-    })
-    .catch((error) => {
-    });
+    }catch (error) {
+      console.log(error)
+      this.setState({
+          error:'Cann\'t connect to server'
+      })
+    }
   }
 
   _map = () => {
-      this.props.navigation.navigate('Map', {token:this.state.token, mail:this.state.mail });
+      this.props.navigation.navigate('Home');
   }
 
   async componentDidMount() {
@@ -84,13 +87,15 @@ export default class AddFloaterByQrcode extends React.Component {
       this._addFloater()
     }
     return (
-      <BarCodeScanner onBarCodeScanned={scanned ? undefined : this.handleBarCodeScanned} style={StyleSheet.absoluteFillObject, styles.camera}>
-        <Modal isVisible={this.state.isModalVisible} onBackdropPress={()=>this._closeModal()} style={{ backgroundColor:'white', borderRadius:30, maxHeight:Dimensions.get('window').height / 2}}>
-          <View style={{ alignItems:'center', justifyContent:'center' }}>
-            <Text style={{ fontSize:40 }}>Floater added</Text>
-          </View>
-        </Modal>
-      </BarCodeScanner>
+      <View style={{height:"100%", width:"100%", marginTop:Constants.statusBarHeight, alignItems:'center', justifyContent:'center'}}>
+        <BarCodeScanner onBarCodeScanned={scanned ? undefined : this.handleBarCodeScanned} style={{height:"70%", width:"90%"}}>
+          {/* <Modal isVisible={this.state.isModalVisible} onBackdropPress={()=>this._closeModal()} style={{ backgroundColor:'white', borderRadius:30, maxHeight:Dimensions.get('window').height / 3}}>
+            <View style={{ alignItems:'center', justifyContent:'center' }}>
+              <Text style={{ fontSize:40 }}>Floater added</Text>
+            </View>
+          </Modal> */}
+        </BarCodeScanner>
+      </View>
       );
   }
   handleBarCodeScanned = ({ type, data }) => {
@@ -104,8 +109,4 @@ export default class AddFloaterByQrcode extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  camera: {
-    height:'100%',
-    marginBottom:0
-  },
 })

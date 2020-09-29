@@ -66,9 +66,11 @@ export default class Devices extends React.Component {
       });
       const responseJson = await response.json();
       if (responseJson["succes"] == false) {
+        console.log(responseJson)
           this.setState({error_share:true})
       }
       if (responseJson["succes"] == true) {
+        console.log(responseJson)
         this.forceUpdate()
         this._closeModalShareFloater()
       }
@@ -249,7 +251,7 @@ export default class Devices extends React.Component {
                 'usrtoken':global.infos.user_token,
             },
             body: JSON.stringify({
-                "id_sig":this.field.sigfox_id,
+                "id_sigfox":this.field.sigfox_id,
                 "lat":Math.random() * (45.5 - 50) + 45.5,
                 "lng":Math.random() * (2 - 3) + 2
             })

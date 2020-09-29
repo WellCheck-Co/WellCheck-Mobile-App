@@ -4,7 +4,6 @@ import { createStackNavigator } from 'react-navigation-stack'
 import Welcome from './screens/Welcome'
 import Login from './screens/Login'
 import Register from './screens/Register'
-import ForgetPassword from './screens/ForgetPassword'
 import tabBar from './screens/NavigationBar' 
 import Details from './screens/Devices/Details'
 
@@ -14,9 +13,8 @@ const navDec = createStackNavigator({
   Welcome: { screen: Welcome },
   Login: { screen:Login },
   Register: { screen:Register },
-  ForgetPassword: { screen:ForgetPassword },
   Devices: { screen:Details },
-  Home: { screen:tabBar}
+  Home: { screen:tabBar }
 },
 {
   headerMode: 'none'

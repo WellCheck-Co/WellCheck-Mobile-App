@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, StyleSheet, SafeAreaView, ScrollView, View, Text, TouchableHighlight, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { Dimensions, StyleSheet, SafeAreaView, ScrollView, View, Text, TouchableHighlight, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import Constants from 'expo-constants';
 import Modal from 'react-native-modal';
 import CustomContributionGraph from '../../components/chart/details/heatMap'
@@ -59,8 +59,19 @@ export default class Details extends React.Component {
     return "hsl("+ noteOn100 +", 100%, 40%)";
   }
 
-  _request_get_all_floater_infos = async () => {
+  _request_get_all_floater_infos = async (date_from, date_to) => {
     try {
+        let body = date_from != null && date_to != null? 
+          JSON.stringify({
+            id_point:this.state.floater_id,
+            period_start:date_from,
+            period_end:date_to,
+            limit:5
+          })
+        :
+          JSON.stringify({
+            id_point:this.state.floater_id
+          })
         const response = await fetch('https://api.wellcheck.fr/point/infos/', {
             method: 'POST',
             headers: {
@@ -68,24 +79,58 @@ export default class Details extends React.Component {
                 'token':global.infos.api_token,
                 'usrtoken':global.infos.user_token,
             },
-            body: JSON.stringify({
-              id_point:this.state.floater_id
-            })
+            body: body
         });
         const responseJson = await response.json();
         if (responseJson["succes"] == false) {
             this.setState({error:true})
         }
         if (responseJson["succes"] == true) {
-            this.setState({floater_score:responseJson['data']['data'][responseJson['data']['data'].length-1]['data']['data']['note'], floater_data:responseJson['data'], bar_color:this.getColorFromNote(responseJson['data']['data'][responseJson['data']['data'].length-1]['data']['data']['note']*10)})
-            this.fill_data()
+            if(responseJson['data']['data'].length == 0){
+              Alert.alert("There is no data for selected date")
+            }
+            else{
+              this.clear_data()
+              this.setState({floater_score:responseJson['data']['data'][responseJson['data']['data'].length-1]['data']['data']['note'], floater_data:responseJson['data'], bar_color:this.getColorFromNote(responseJson['data']['data'][responseJson['data']['data'].length-1]['data']['data']['note']*10)})
+              this.fill_data()
+            }
         }
     }
     catch (error) {
+      console.log(error)
         this.setState({
             error:'Cann\'t connect to server'
         })
     }        
+  }
+
+  clear_data(){
+    this.setState({
+      data_ph:{
+        labels:[],
+        datasets:[{
+          data:[]
+        }]
+      },
+      data_temp:{
+        labels:[],
+        datasets:[{
+          data:[]
+        }]
+      },
+      data_turbidity:{
+        labels:[],
+        datasets:[{
+          data:[]
+        }]
+      },
+      data_redox:{
+        labels:[],
+        datasets:[{
+          data:[]
+        }]
+      }
+    })
   }
 
   _map(){
@@ -137,7 +182,7 @@ export default class Details extends React.Component {
   }
 
   componentDidMount(){
-    this._request_get_all_floater_infos()
+    this._request_get_all_floater_infos(null, null)
   }
 
   _openModalMonth = () => {
@@ -153,9 +198,7 @@ export default class Details extends React.Component {
   }
 
   _set_month(month) {
-    this.setState({
-      month:month,
-    })
+    this.state.month = month
     this._closeModalMonth()
   }
 
@@ -240,6 +283,7 @@ export default class Details extends React.Component {
   _generate_report= async () => {
     const now = new Date();
     const date_past_one_week = new Date().setDate(now.getDate()-7)
+    console.log()
     return await WebBrowser.openBrowserAsync("https://doc.wellcheck.fr/src.php?id="+this.state.floater_id+"&from="+parseInt(date_past_one_week/1000,10)+"&to="+parseInt(now.getTime()/1000,10));
   }
 
@@ -272,6 +316,39 @@ export default class Details extends React.Component {
     return <SvgXml xml={svg} width="50" height="50"/>;
   }
 
+  string_date_to_timestamp() {
+    const months_array = {
+      "January": "01",
+      "February": "02",
+      "March": "03",
+      "April": "04",
+      "May": "05",
+      "June": "06",
+      "Jully": "07",
+      "August": "08",
+      "September": "09",
+      "October": "10",
+      "November": "11",
+      "December": "12"
+    };
+    let date_from = this.stringToDate((parseInt(this.state.day)-1).toString() + "/" + months_array[this.state.month] + "/" + this.state.year,"dd/MM/yyyy","/").getTime()
+    let date_to = this.stringToDate(this.state.day + "/" + months_array[this.state.month] + "/" + this.state.year,"dd/MM/yyyy","/").getTime()
+    this._request_get_all_floater_infos(date_from, date_to)
+  }
+
+  stringToDate(_date,_format,_delimiter){
+    var formatLowerCase=_format.toLowerCase();
+    var formatItems=formatLowerCase.split(_delimiter);
+    var dateItems=_date.split(_delimiter);
+    var monthIndex=formatItems.indexOf("mm");
+    var dayIndex=formatItems.indexOf("dd");
+    var yearIndex=formatItems.indexOf("yyyy");
+    var month=parseInt(dateItems[monthIndex]);
+    month-=1;
+    var formatedDate = new Date(dateItems[yearIndex],month,dateItems[dayIndex]);
+    return formatedDate;
+  }
+
   render() {
     const heatmap_data = [
         { date: "2017-01-02", count: 1 },
@@ -291,19 +368,24 @@ export default class Details extends React.Component {
     const all_month = ['January', 'February', 'March', 'April', 'May', 'June', 'Jully', 'August', 'September', 'October', 'November', 'December']
     const ten_years = ['2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029']
     
+    let save;
+    if (this.state.day != "Day" && this.state.month != "Month" && this.state.year != "Year") {
+      save = <View style={{alignItems:'center', justifyContent:'center', marginTop:5, marginBottom:5, backgroundColor:'#8c8c8c'}}><TouchableOpacity style={{ borderRadius:10, alignItems:'center', justifyContent:'center', width:200,  height:40, backgroundColor:'#1C90FF'}} onPress={() => this.string_date_to_timestamp()}><Text style={{ fontSize:10, color:'white' }}>Send</Text></TouchableOpacity></View>
+    }
+
     return (
       <SafeAreaView style={styles.container}>
         {this.state.back_to_map != "" &&
-            <View  style={{backgroundColor:"#8c8c8c"}} >
+            <View  style={{backgroundColor:"#8c8c8c", borderBottomWidth:1, height:40, borderColor:"grey"}} >
               <TouchableOpacity onPress={() => this._map()}>
-                <Image source={require('../../assets/images/logo/back_page.png')} style={{height: 30, width: 30, justifyContent: 'flex-start', marginLeft:30, marginTop: 10}}/>
+                <Image source={require('../../assets/images/logo/back_page.png')} style={{height: 20, width: 30, justifyContent: 'flex-start', marginLeft:20, marginTop: 10}}/>
               </TouchableOpacity>
             </View>
           }
           {this.state.back_to_devices != "" &&
-            <View  style={{backgroundColor:"#8c8c8c"}} >
+            <View  style={{backgroundColor:"#8c8c8c", borderBottomWidth:1, height:40, borderColor:"grey"}} >
               <TouchableOpacity onPress={() => this._devices()}>
-                <Image source={require('../../assets/images/logo/back_page.png')} style={{height: 30, width: 30, justifyContent: 'flex-start', marginLeft:30, marginTop: 10}}/>
+                <Image source={require('../../assets/images/logo/back_page.png')} style={{height: 20, width: 30, justifyContent: 'flex-start', marginLeft:20, marginTop: 10}}/>
               </TouchableOpacity>
             </View>
           }
@@ -324,6 +406,7 @@ export default class Details extends React.Component {
               <Text style={styles.valueDate}>{this.state.year}</Text>
             </View>
           </TouchableHighlight>
+          { save }
         </View>
         <View style={{backgroundColor:"#dbdbdb", borderBottomEndRadius:20, borderBottomStartRadius:20}}>
           <View style={{justifyContent:'center', alignItems:'center'}}>
@@ -342,7 +425,11 @@ export default class Details extends React.Component {
             </View>
             <View style={{justifyContent:'space-around', alignItems:'center', flexDirection:"row", marginTop:10, marginBottom:10, }}>
               <Text style={{fontSize:30}}>{this.state.floater_name}</Text>
-                {this.buildsvg(this.state.floater_type, this.state.floater_score)}
+                {this.state.floater_type != null && this.state.floater_score != null?
+                  this.buildsvg(this.state.floater_type, this.state.floater_score)
+                :
+                  null
+                }
             </View>
           </View>
         

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet,KeyboardAvoidingView } from 'react-native';
 import Constants from 'expo-constants';
 
 import LogoWellCheckTop from '../components/images/logoWellCheckTop/logoWellCheckTop';
@@ -29,26 +29,31 @@ export default class Register extends React.Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+              behavior={Platform.OS == "ios" ? "padding" : "height"}
+              style={styles.container}
+            >
+      {/* <View style={styles.container}> */}
           <View style={styles.body}>
             
             <LogoWellCheckTop/>
-            <LoginFields 
-              page="Register"
-              setMail={this.set_mail.bind(this)}
-              setPassword={this.set_password.bind(this)}
-              setPassword2={this.set_password2.bind(this)}
-            />
-            <BottomLoginButtons
-              page="Register"
-              navigation={this.props.navigation}
-              mail={this.state.mail}
-              password={this.state.password}
-              password2={this.state.password2}
-            />
-
+            
+              <LoginFields 
+                page="Register"
+                setMail={this.set_mail.bind(this)}
+                setPassword={this.set_password.bind(this)}
+                setPassword2={this.set_password2.bind(this)}
+              />
+              <BottomLoginButtons
+                page="Register"
+                navigation={this.props.navigation}
+                mail={this.state.mail}
+                password={this.state.password}
+                password2={this.state.password2}
+              />
+            
           </View>
-      </View>
+          </KeyboardAvoidingView>
       );
   }
 
